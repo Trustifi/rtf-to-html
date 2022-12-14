@@ -129,15 +129,19 @@ function styleTags (chunk, defaults) {
 }
 
 function renderPara (para, defaults) {
-  if (!para.content || para.content.length === 0) return
-  const style = CSS(para, defaults)
-  const tags = styleTags(para, defaults)
-  const pdefaults = Object.assign({}, defaults)
-  for (let item of Object.keys(para.style)) {
-    if (para.style[item] != null) pdefaults[item] = para.style[item]
-  }
   const paraTag = defaults.paraTag
-  return `<${paraTag}${style ? ' style="' + style + '"' : ''}>${tags.open}${para.content.map(span => renderSpan(span, pdefaults)).join('')}${tags.close}</${paraTag}>`
+  if (para.content && para.content.length) {
+    const style = CSS(para, defaults)
+    const tags = styleTags(para, defaults)
+    const pdefaults = Object.assign({}, defaults)
+    for (let item of Object.keys(para.style)) {
+      if (para.style[item] != null) pdefaults[item] = para.style[item]
+    }
+    return `<${paraTag}${style ? ' style="' + style + '"' : ''}>${tags.open}${para.content.map(span => renderSpan(span, pdefaults)).join('')}${tags.close}</${paraTag}>`
+  }
+  if (para.value && para.value.length) {
+    return `<${paraTag}>renderSpan(para, defaults)</${paraTag}>`
+  }
 }
 
 function renderSpan (span, defaults) {

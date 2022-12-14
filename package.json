@@ -1,6 +1,6 @@
 {
   "name": "@iarna/rtf-to-html",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "main": "index.js",
   "scripts": {
     "test": "echo \"no test specified\"",
@@ -15,7 +15,7 @@
   "author": "Rebecca Turner <me@re-becca.org> (http://re-becca.org/)",
   "license": "ISC",
   "dependencies": {
-    "rtf-parser": "^1.0.4"
+    "rtf-parser": "git+https://github.com/Trustifi/rtf-parser.git"
   },
   "devDependencies": {
     "weallbehave": "*",
@@ -31,10 +31,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iarna/rtf-to-html.git"
+    "url": "git+https://github.com/Trustifi/rtf-to-html.git"
   },
   "bugs": {
-    "url": "https://github.com/iarna/rtf-to-html/issues"
+    "url": "https://github.com/Trustifi/rtf-to-html/issues"
   },
   "homepage": "https://npmjs.com/package/@iarna/rtf-to-html"
 }
