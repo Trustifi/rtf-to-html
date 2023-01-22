@@ -25,6 +25,10 @@ function outputTemplate (doc, defaults, content) {
 }
 
 function rtfToHTML (doc, options) {
+  if (!options.textAsHtml) {
+    return doc.content.map(para => para.content && para.content.map(span => span.value).join(' ') || para.value || '').join(' ');
+  }
+
   const defaults = Object.assign({
     font: doc.style.font || {name: 'Times', family: 'roman'},
     fontSize: doc.style.fontSize || 24,
@@ -38,7 +42,7 @@ function rtfToHTML (doc, options) {
     indent: 0,
     align: 'left',
     valign: 'normal',
-
+    textAsHtml: true,
     paraBreaks: '\n\n',
     paraTag: 'p',
     template: outputTemplate
