@@ -11,7 +11,7 @@ function asStream (opts, cb) {
     cb = opts
     opts = null
   }
-  return parse(htmlifyresult(opts, cb))
+  return parse(opts.rawHtml, htmlifyresult(opts, cb))
 }
 
 function fromStream (stream, opts, cb) {
@@ -19,7 +19,7 @@ function fromStream (stream, opts, cb) {
     cb = opts
     opts = null
   }
-  return parse.stream(stream, htmlifyresult(opts, cb))
+  return parse.stream(stream, opts.rawHtml, htmlifyresult(opts, cb))
 }
 
 function fromString (string, opts, cb) {
@@ -27,7 +27,7 @@ function fromString (string, opts, cb) {
     cb = opts
     opts = null
   }
-  return parse.string(string, htmlifyresult(opts, cb))
+  return parse.string(string, opts.rawHtml, htmlifyresult(opts, cb))
 }
 
 function htmlifyresult (opts, cb) {
