@@ -25,10 +25,6 @@ function outputTemplate (doc, defaults, content) {
 }
 
 function rtfToHTML (doc, options) {
-  if (!options.textAsHtml) {
-    return doc.content.map(para => para.content && para.content.map(span => span.value).join(' ') || para.value || '').join(' ');
-  }
-
   const defaults = Object.assign({
     font: doc.style.font || {name: 'Times', family: 'roman'},
     fontSize: doc.style.fontSize || 24,
@@ -42,16 +38,32 @@ function rtfToHTML (doc, options) {
     indent: 0,
     align: 'left',
     valign: 'normal',
-    textAsHtml: true,
-    paraBreaks: '\n\n',
+    paraBreaks: '\n',
     paraTag: 'p',
-    template: outputTemplate
+    rawHtml: false,
+    template: outputTemplate,
+    ignoreNodes: ['stylesheet','adeflang','revtbl','xmlnstbl','pnseclvl','fldinst','latentstyles','listlevel']
   }, options || {})
-  const content = doc.content
-    .map(para => renderPara(para.content ? para : {content: [para], style: {}}, defaults))
-    .filter(html => html != null)
-    .join(defaults.paraBreaks)
-  return defaults.template(doc, defaults, content)
+
+  //let types = doc.content.flatMap(para => para.content && para.content.map(span => span.type) || [para.type]);
+  //types = [...new Set(types)];
+  //console.log(types);
+
+  let content = doc.content
+      .filter(para => defaults.rawHtml || !para.ignorable)
+      .map(para => renderPara(para.content ? para : {content: [para], style: {}}, defaults))
+      .filter(html => html != null)
+      .join(defaults.paraBreaks);
+
+  if (defaults.rawHtml) {
+    content = content.replace(/HYPERLINK\s+['"]([^\s'"]+)['"]/g, '$1').replace(/\u00a0/g, '');
+  }
+
+  if (defaults.template && !content.includes('<html')) {
+    return defaults.template(doc, defaults, content)
+  }
+
+  return content;
 }
 
 function font (ft) {
@@ -133,18 +145,31 @@ function styleTags (chunk, defaults) {
 }
 
 function renderPara (para, defaults) {
-  const paraTag = defaults.paraTag
-  if (para.content && para.content.length) {
-    const style = CSS(para, defaults)
-    const tags = styleTags(para, defaults)
-    const pdefaults = Object.assign({}, defaults)
-    for (let item of Object.keys(para.style)) {
-      if (para.style[item] != null) pdefaults[item] = para.style[item]
-    }
-    return `<${paraTag}${style ? ' style="' + style + '"' : ''}>${tags.open}${para.content.map(span => renderSpan(span, pdefaults)).join('')}${tags.close}</${paraTag}>`
+  if (!para.content || para.content.length === 0) return;
+
+  if (defaults.rawHtml && para.ignorable) {
+    return para.content.filter(span => span.value && !defaults.ignoreNodes.includes(span.type)).map(span => span.value.trim()).join('');
   }
-  if (para.value && para.value.length) {
-    return `<${paraTag}>renderSpan(para, defaults)</${paraTag}>`
+
+  const style = CSS(para, defaults)
+  const tags = styleTags(para, defaults)
+  const pdefaults = Object.assign({}, defaults)
+  for (let item of Object.keys(para.style)) {
+    if (para.style[item] != null) pdefaults[item] = para.style[item]
+  }
+
+  const paraTag = defaults.paraTag;
+  const hasRawHtml = defaults.rawHtml && para.content.some(span => span.ignorable && !defaults.ignoreNodes.includes(span.type) && span.value.trim());
+  if (hasRawHtml) {
+    const content = para.content.map(span => span.ignorable ?
+        (defaults.rawHtml && !defaults.ignoreNodes.includes(span.type) && span.value.trim() || '') :
+        renderSpan(span, pdefaults)
+    ).join('');
+    return content;
+  }
+  else {
+    const content = para.content.filter(span => !span.ignorable).map(span => renderSpan(span, pdefaults)).join('');
+    return `<${paraTag}${style ? ' style="' + style + '"' : ''}>${tags.open}${content}${tags.close}</${paraTag}>`;
   }
 }
 
