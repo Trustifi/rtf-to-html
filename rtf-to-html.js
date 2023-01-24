@@ -56,7 +56,7 @@ function rtfToHTML (doc, options) {
       .join(defaults.paraBreaks);
 
   if (defaults.rawHtml) {
-    content = content.replace(/HYPERLINK\s+['"]([^\s'"]+)['"]/g, '$1').replace(/\u00a0/g, '');
+    content = content.replace(/\u00a0/g, '');
   }
 
   if (defaults.template && !content.includes('<html')) {
@@ -173,9 +173,15 @@ function renderPara (para, defaults) {
   }
 }
 
+const reg = /[^<"](http.?:[^<"\s]*)/g;
 function renderSpan (span, defaults) {
   const style = CSS(span, defaults)
   const tags = styleTags(span, defaults)
+
+  if (span.type === 'fldrslt' && span.value.includes('http')) {
+    span.value = (' '+span.value).replace(reg, '<a href="$1">$1</a>');
+  }
+
   const value = `${tags.open}${span.value}${tags.close}`
   if (style) {
     return `<span style="${style}">${value}</span>`
