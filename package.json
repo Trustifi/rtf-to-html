@@ -1,20 +1,13 @@
 {
   "name": "rtf-to-html",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "main": "index.js",
   "engines": {
     "node": "18.12.1",
     "npm": "8.19.2"
   },
   "scripts": {
-    "npm-install": "npm i",
-    "test": "echo \"no test specified\"",
-    "prerelease": "npm t",
-    "release": "standard-version -s",
-    "postrelease": "npm publish && git push --follow-tags",
-    "pretest": "standard",
-    "update-coc": "weallbehave -o . && git add CODE_OF_CONDUCT.md && git commit -m 'docs(coc): updated CODE_OF_CONDUCT.md'",
-    "update-contrib": "weallcontribute -o . && git add CONTRIBUTING.md && git commit -m 'docs(contributing): updated CONTRIBUTING.md'"
+    "npm-install": "npm i"
   },
   "keywords": [],
   "author": "Rebecca Turner <me@re-becca.org> (http://re-becca.org/)",
@@ -23,11 +16,6 @@
     "rtf-parser": "git+https://github.com/Trustifi/rtf-parser.git"
   },
   "devDependencies": {
-    "weallbehave": "*",
-    "weallcontribute": "*",
-    "standard": "*",
-    "standard-version": "*",
-    "tap": "*"
   },
   "description": "Convert RTF to HTML in pure JavaScript.",
   "files": [
@@ -38,8 +26,5 @@
     "type": "git",
     "url": "git+https://github.com/Trustifi/rtf-to-html.git"
   },
-  "bugs": {
-    "url": "https://github.com/Trustifi/rtf-to-html/issues"
-  },
-  "homepage": "https://npmjs.com/package/@iarna/rtf-to-html"
+  "homepage": "https://github.com/iarna/rtf-to-html"
 }
