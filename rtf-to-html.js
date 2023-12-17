@@ -40,30 +40,11 @@ function rtfToHTML (doc, options) {
     valign: 'normal',
     paraBreaks: '\n',
     paraTag: 'p',
-    rawHtml: false,
-    template: outputTemplate,
-    ignoreNodes: ['stylesheet','adeflang','revtbl','xmlnstbl','pnseclvl','fldinst','latentstyles','listlevel']
-  }, options || {})
+    template: outputTemplate
+  }, options || {});
 
-  //let types = doc.content.flatMap(para => para.content && para.content.map(span => span.type) || [para.type]);
-  //types = [...new Set(types)];
-  //console.log(types);
-
-  let content = doc.content
-      .filter(para => defaults.rawHtml || !para.ignorable)
-      .map(para => renderPara(para.content ? para : {content: [para], style: {}}, defaults))
-      .filter(html => html != null)
-      .join(defaults.paraBreaks);
-
-  if (defaults.rawHtml) {
-    content = content.replace(/\u00a0/g, '');
-  }
-
-  if (defaults.template && !content.includes('<html')) {
-    return defaults.template(doc, defaults, content)
-  }
-
-  return content;
+  const content = doc.content.map(para => renderPara(para, defaults)).filter(html => html != null).join(defaults.paraBreaks);
+  return content && defaults.template(doc, defaults, content);
 }
 
 function font (ft) {
@@ -145,12 +126,7 @@ function styleTags (chunk, defaults) {
 }
 
 function renderPara (para, defaults) {
-  if (!para.content || para.content.length === 0) return;
-
-  if (defaults.rawHtml && para.ignorable) {
-    return para.content.filter(span => span.value && !defaults.ignoreNodes.includes(span.type)).map(span => span.value.trim()).join('');
-  }
-
+  if (!para.content || para.content.length === 0) return
   const style = CSS(para, defaults)
   const tags = styleTags(para, defaults)
   const pdefaults = Object.assign({}, defaults)
@@ -159,29 +135,15 @@ function renderPara (para, defaults) {
   }
 
   const paraTag = defaults.paraTag;
-  const hasRawHtml = defaults.rawHtml && para.content.some(span => span.ignorable && !defaults.ignoreNodes.includes(span.type) && span.value.trim());
-  if (hasRawHtml) {
-    const content = para.content.map(span => span.ignorable ?
-        (defaults.rawHtml && !defaults.ignoreNodes.includes(span.type) && span.value.trim() || '') :
-        renderSpan(span, pdefaults)
-    ).join('');
-    return content;
-  }
-  else {
-    const content = para.content.filter(span => !span.ignorable).map(span => renderSpan(span, pdefaults)).join('');
-    return `<${paraTag}${style ? ' style="' + style + '"' : ''}>${tags.open}${content}${tags.close}</${paraTag}>`;
-  }
+
+  //We can also print plain "values" but it can lead to duplicates
+  //const content = (para.content && para.content.map(span => renderSpan(span, pdefaults)).join('') || para.value || '').trim();
+  return `<${paraTag}${style ? ' style="' + style + '"' : ''}>${tags.open}${para.content.map(span => renderSpan(span, pdefaults)).join('')}${tags.close}</${paraTag}>`
 }
 
-const reg = /[^<"](http.?:[^<"\s]*)/g;
 function renderSpan (span, defaults) {
   const style = CSS(span, defaults)
   const tags = styleTags(span, defaults)
-
-  if (span.type === 'fldrslt' && span.value.includes('http')) {
-    span.value = (' '+span.value).replace(reg, '<a href="$1">$1</a>');
-  }
-
   const value = `${tags.open}${span.value}${tags.close}`
   if (style) {
     return `<span style="${style}">${value}</span>`
