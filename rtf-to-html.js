@@ -40,10 +40,16 @@ function rtfToHTML (doc, options) {
     valign: 'normal',
     paraBreaks: '\n',
     paraTag: 'p',
-    template: outputTemplate
+    template: outputTemplate,
+    ignoreNodes: ['stylesheet','adeflang','revtbl','xmlnstbl','pnseclvl','fldinst','latentstyles','listlevel']
   }, options || {});
 
-  const content = doc.content.map(para => renderPara(para, defaults)).filter(html => html != null).join(defaults.paraBreaks);
+  const content = doc.content
+    .filter(para => !para.ignorable)
+    .map(para => renderPara(para.content ? para : {content: [para], style: {}}, defaults))
+    .filter(html => html != null)
+    .join(defaults.paraBreaks);
+
   return content && defaults.template(doc, defaults, content);
 }
 
@@ -138,12 +144,18 @@ function renderPara (para, defaults) {
 
   //We can also print plain "values" but it can lead to duplicates
   //const content = (para.content && para.content.map(span => renderSpan(span, pdefaults)).join('') || para.value || '').trim();
-  return `<${paraTag}${style ? ' style="' + style + '"' : ''}>${tags.open}${para.content.map(span => renderSpan(span, pdefaults)).join('')}${tags.close}</${paraTag}>`
+  const content = para.content.filter(span => !span.ignorable).map(span => renderSpan(span, pdefaults)).join('');
+  return `<${paraTag}${style ? ' style="' + style + '"' : ''}>${tags.open}${content}${tags.close}</${paraTag}>`;
 }
 
 function renderSpan (span, defaults) {
   const style = CSS(span, defaults)
   const tags = styleTags(span, defaults)
+
+  if (span.type === 'fldrslt' && span.value.includes('http')) {
+    span.value = (' '+span.value).replace(/[^<"](http.?:[^<"\s]*)/g, '<a href="$1">$1</a>');
+  }
+
   const value = `${tags.open}${span.value}${tags.close}`
   if (style) {
     return `<span style="${style}">${value}</span>`
