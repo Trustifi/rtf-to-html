@@ -13,7 +13,7 @@
   "author": "Rebecca Turner <me@re-becca.org> (http://re-becca.org/)",
   "license": "ISC",
   "dependencies": {
-    "rtf-parser": "git+https://github.com/Trustifi/rtf-parser.git"
+    "trustifi-rtf-parser": "git+https://github.com/Trustifi/rtf-parser.git"
   },
   "devDependencies": {
     "eslint": "^8.56.0"

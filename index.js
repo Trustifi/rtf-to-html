@@ -1,5 +1,5 @@
 'use strict'
-const parse = require('rtf-parser')
+const parse = require('trustifi-rtf-parser')
 const rtfToHTML = require('./rtf-to-html.js')
 
 module.exports = asStream
